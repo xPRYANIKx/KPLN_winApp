@@ -29,15 +29,24 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            this.chromiumWebBrowser = new CefSharp.WinForms.ChromiumWebBrowser();
             this.SuspendLayout();
+            // 
+            // chromiumWebBrowser
+            // 
+            this.chromiumWebBrowser.ActivateBrowserOnCreation = false;
+            resources.ApplyResources(this.chromiumWebBrowser, "chromiumWebBrowser");
+            this.chromiumWebBrowser.Name = "chromiumWebBrowser";
+            this.chromiumWebBrowser.LoadingStateChanged += new System.EventHandler<CefSharp.LoadingStateChangedEventArgs>(this.chromiumWebBrowser_LoadingStateChanged);
             // 
             // FormMain
             // 
-            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnableAllowFocusChange;
             this.BackColor = System.Drawing.Color.Gainsboro;
+            resources.ApplyResources(this, "$this");
             this.ControlBox = false;
+            this.Controls.Add(this.chromiumWebBrowser);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.KeyPreview = true;
             this.Name = "FormMain";
@@ -50,6 +59,8 @@
         }
 
         #endregion
+
+        private CefSharp.WinForms.ChromiumWebBrowser chromiumWebBrowser;
     }
 }
 
