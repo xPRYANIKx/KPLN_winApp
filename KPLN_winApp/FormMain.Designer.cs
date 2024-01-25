@@ -1,4 +1,6 @@
-﻿namespace KPLN_winApp
+﻿using System.Windows.Forms;
+
+namespace KPLN_winApp
 {
     partial class FormMain
     {
@@ -37,6 +39,7 @@
             this.chromiumWebBrowser.ActivateBrowserOnCreation = false;
             resources.ApplyResources(this.chromiumWebBrowser, "chromiumWebBrowser");
             this.chromiumWebBrowser.Name = "chromiumWebBrowser";
+            this.chromiumWebBrowser.TabStop = false;
             this.chromiumWebBrowser.LoadingStateChanged += new System.EventHandler<CefSharp.LoadingStateChangedEventArgs>(this.chromiumWebBrowser_LoadingStateChanged);
             // 
             // FormMain
@@ -53,14 +56,15 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.TopMost = true;
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.ResumeLayout(false);
-
+ 
         }
 
         #endregion
 
-        private CefSharp.WinForms.ChromiumWebBrowser chromiumWebBrowser;
+        public CefSharp.WinForms.ChromiumWebBrowser chromiumWebBrowser;
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,10 +21,30 @@ namespace KPLN_winApp
             InitializeComponent();
         }
 
-
         private void FormMain_Load(object sender, EventArgs e)
         {
-            this.WindowState = FormWindowState.Maximized;
+            // Загрузка содержимого файла "users.ini"
+            string fileContent = File.ReadAllText("users.ini");
+            // Получение имени пользователя, авторизованного в системе
+            string currentUser = Environment.UserName;
+            // Проверка строк файла "users.ini"
+            string[] lines = fileContent.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split(',');
+                if (parts.Length == 2)
+                {
+                    string username = parts[0].Trim();
+                    bool authorized = bool.Parse(parts[1].Trim());
+                    // Принудительное закрытие программы
+                    if (username == currentUser && authorized)
+                    {
+                        Application.Exit();
+                        return; // Скорее всего не понадобится
+                    }
+                }
+            }
+            // Загрузка страницы
             chromiumWebBrowser.LoadUrl("https://kpln-employees.ru/");
         }
 
@@ -31,5 +52,6 @@ namespace KPLN_winApp
         {
 
         }
+
     }
 }
