@@ -25,8 +25,10 @@ namespace KPLN_winApp
         {
             // Загрузка содержимого файла "users.ini"
             string fileContent = File.ReadAllText("users.ini");
+
             // Получение имени пользователя, авторизованного в системе
             string currentUser = Environment.UserName;
+
             // Проверка строк файла "users.ini"
             string[] lines = fileContent.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string line in lines)
@@ -35,17 +37,20 @@ namespace KPLN_winApp
                 if (parts.Length == 2)
                 {
                     string username = parts[0].Trim();
-                    bool authorized = bool.Parse(parts[1].Trim());
+                    string authorized = parts[1].Trim();
+
                     // Принудительное закрытие программы
-                    if (username == currentUser && authorized)
+                    if ((username == currentUser && authorized == "1")) 
                     {
                         Application.Exit();
-                        return; // Скорее всего не понадобится
                     }
                 }
             }
             // Загрузка страницы
             chromiumWebBrowser.LoadUrl("https://kpln-employees.ru/");
+
+            // Отладка
+            Console.WriteLine(currentUser);
         }
 
         private void chromiumWebBrowser_LoadingStateChanged(object sender, CefSharp.LoadingStateChangedEventArgs e)
