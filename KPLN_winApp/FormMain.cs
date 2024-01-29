@@ -10,16 +10,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
+using CefSharp;
+using CefSharp.WinForms;
 
 
 namespace KPLN_winApp
 {
     public partial class FormMain : System.Windows.Forms.Form
     {
-        // Инициализация компонентов Chromium 
-        private void chromiumWebBrowser_LoadingStateChanged(object sender, CefSharp.LoadingStateChangedEventArgs e)
+        public FormMain()
         {
+            InitializeComponent();
         }
+
+
+        // Инициализация компонентов Chromium
+        public ChromiumWebBrowser chromiumWebBrowser;
 
 
         // Функция проверки работоспособности сайта (наличие интернета)
@@ -44,16 +50,10 @@ namespace KPLN_winApp
         }
 
 
-        // InitializeComponent и FormMain_Load
-        public FormMain()
-        {
-            InitializeComponent();
-        }
         private void FormMain_Load(object sender, EventArgs e)
         {
             // Получение имени пользователя, авторизованного в системе
             string currentWinUser = Environment.UserName;
-
 
             // Проверка наличия "user.ini" (в случае отсутствия - создать)
             string internalUserFileUrl = "user.ini";
@@ -63,7 +63,6 @@ namespace KPLN_winApp
                 File.WriteAllText(internalUserFileUrl, fileUserContentAdd);
             }
 
-
             // Загрузка содержимого файла "user.ini" и проверка его строк
             string userFileContent = File.ReadAllText(internalUserFileUrl);
             string[] userFileParts = userFileContent.Split(',');
@@ -72,11 +71,9 @@ namespace KPLN_winApp
                 string userFileUsername = userFileParts[0].Trim();
                 string userFileAuthorized = userFileParts[1].Trim();
 
-
                 // Получение данных из общего файла "users.ini"
                 string mainUserFileUrl = "Z:\\Методист\\users.ini"; 
                 string[] usersFileContent = File.ReadAllLines(mainUserFileUrl);
-
 
                 // Обновление файла "user.ini"
                 for (int i = 0; i < usersFileContent.Length; i++)
@@ -91,14 +88,12 @@ namespace KPLN_winApp
                     }
                 }
 
-
                 // Проверка выполнения условия и выключение
                 if (userFileUsername == currentWinUser && userFileAuthorized == "1")
                 {
                     Application.Exit();
                 }
             }
-
 
             // Проверка доступа на сайт и загрузка страницы
             string url = "https://kpln-employees.ru/";
@@ -107,10 +102,11 @@ namespace KPLN_winApp
             {
                 Application.Exit();
             }
-            else { chromiumWebBrowser.LoadUrl(url); }
+            else {;
+                chromiumWebBrowser.LoadUrl(url);
+            }
 
 
-            // (!)
             // Функция обработчик событий: данные заполнены - в HTML добавляется строчка: отлавливаем;
             // В "user.ini" '0' меняется на '1'; обновление данных в "userDB.ini";
             // Application.Exit();
