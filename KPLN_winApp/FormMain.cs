@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 
 namespace KPLN_winApp
@@ -31,8 +30,8 @@ namespace KPLN_winApp
                 using (var client = new WebClient())
                 {
                     string response = client.DownloadString(url);
-                    if (response.Contains("Строчка вшитая в HTML, еслии страница не может прогрузиться"))
-                    {
+                    if (response.Contains("<span jsselect=\"heading\" jsvalues=\".innerHTML:msg\" jstcache=\"9\">Не удается получить доступ к сайту</span>") || 
+                        response.Contains("Вшитая в код строчка")) {
                         return false;
                     }
                     return true;
@@ -45,6 +44,7 @@ namespace KPLN_winApp
         }
 
 
+        // InitializeComponent и FormMain_Load
         public FormMain()
         {
             InitializeComponent();
@@ -52,31 +52,48 @@ namespace KPLN_winApp
         private void FormMain_Load(object sender, EventArgs e)
         {
             // Получение имени пользователя, авторизованного в системе
-            string currentUser = Environment.UserName;
+            string currentWinUser = Environment.UserName;
 
 
             // Проверка наличия "user.ini" (в случае отсутствия - создать)
-            string filePathU = "user.ini";
-            if (!File.Exists(filePathU))
+            string internalUserFileUrl = "user.ini";
+            if (!File.Exists(internalUserFileUrl))
             {
-                string fileContentAdd = $"{currentUser},0";
-                File.WriteAllText(filePathU, fileContentAdd);
+                string fileUserContentAdd = $"{currentWinUser},0";
+                File.WriteAllText(internalUserFileUrl, fileUserContentAdd);
             }
 
 
-            // (!)
-            // Получение данных из общего файла "userDB.ini" и обновление файла "user.ini"
-
-
             // Загрузка содержимого файла "user.ini" и проверка его строк
-            string fileContent = File.ReadAllText(filePathU);
-            string[] parts = fileContent.Split(',');
-            if (parts.Length == 2)
+            string userFileContent = File.ReadAllText(internalUserFileUrl);
+            string[] userFileParts = userFileContent.Split(',');
+            if (userFileParts.Length == 2)
             {
-                string username = parts[0].Trim();
-                string authorized = parts[1].Trim();
+                string userFileUsername = userFileParts[0].Trim();
+                string userFileAuthorized = userFileParts[1].Trim();
 
-                if (username == currentUser && authorized == "1")
+
+                // Получение данных из общего файла "users.ini"
+                string mainUserFileUrl = "Z:\\Методист\\users.ini"; 
+                string[] usersFileContent = File.ReadAllLines(mainUserFileUrl);
+
+
+                // Обновление файла "user.ini"
+                for (int i = 0; i < usersFileContent.Length; i++)
+                {
+                    string[] usersFileParts = usersFileContent[i].Split(',');
+                    if (usersFileParts[0] == userFileUsername)
+                    {
+                        userFileAuthorized = usersFileParts[1];
+                        string tempInternaArr = userFileUsername + ',' + userFileAuthorized;
+                        File.WriteAllText(internalUserFileUrl, tempInternaArr);
+                        break;
+                    }
+                }
+
+
+                // Проверка выполнения условия и выключение
+                if (userFileUsername == currentWinUser && userFileAuthorized == "1")
                 {
                     Application.Exit();
                 }
@@ -100,7 +117,7 @@ namespace KPLN_winApp
 
 
             // Отладка
-            Console.WriteLine("Пользователь Windows: " + currentUser);
+            Console.WriteLine("Пользователь Windows: " + currentWinUser);
             Console.WriteLine("Доступ к внешнему ресурсу: " + webResponse);
         }
     }
