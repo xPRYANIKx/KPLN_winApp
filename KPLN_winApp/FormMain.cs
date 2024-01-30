@@ -19,19 +19,57 @@ namespace KPLN_winApp
             CefSettings settings = new CefSettings();
             settings.Locale = "ru";
             Cef.Initialize(settings);
+            // Инициализация контекстного меню
+            this.Controls.Add(chromiumWebBrowser);
+            chromiumWebBrowser.MenuHandler = new CustomMenuHandler();
+
         }
 
 
         // Инициализация компонентов Chromium
         public ChromiumWebBrowser chromiumWebBrowser;
         private void chromiumWebBrowser_LoadingStateChanged(object sender, LoadingStateChangedEventArgs e) {
+
         }
-       
+
+        // Контекстное меню в ChromiumWebBrowser
+        public class CustomMenuHandler : IContextMenuHandler
+        {
+            public void OnBeforeContextMenu(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model)
+            {
+                if (model.Count != 1 && !parameters.IsEditable)
+                {
+                    model.AddSeparator();
+                    model.AddItem((CefMenuCommand)26505, "Закрыть приложение");
+                }
+            }
+            public bool OnContextMenuCommand(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, CefMenuCommand commandId, CefEventFlags eventFlags)
+            {
+                if (commandId == (CefMenuCommand)26505)
+                {
+                    Application.Exit();
+                    return true;
+                }
+                return false;
+            }
+            public void OnContextMenuDismissed(IWebBrowser browserControl, IBrowser browser, IFrame frame)
+            {
+            }
+
+            public bool RunContextMenu(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model, IRunContextMenuCallback callback)
+            {
+                return false;
+            }
+        }
+
+
+
 
         private void FormMain_Load(object sender, EventArgs e)
         {
             // Получение имени пользователя, авторизованного в системе
             string currentWinUser = Environment.UserName;
+
 
 
             // Проверка наличия "currentuser.ini" (в случае отсутствия - создать)
@@ -43,17 +81,23 @@ namespace KPLN_winApp
             }
 
 
+
             // Получение данных из общего файла "userlist.ini"
             string mainUserFileUrl = "Z:\\Методист\\userlist.ini";
             try
-            {
+            {                
                 File.ReadAllLines(mainUserFileUrl);
             }
             catch (System.IO.FileNotFoundException)
             {
-                Environment.Exit(1);
+                Application.Exit();
+            }
+            catch (System.IO.IOException)
+            {
+                Application.Exit();
             }
             string[] usersFileContent = File.ReadAllLines(mainUserFileUrl);
+
 
 
             // Загрузка содержимого файла "currentuser.ini" и проверка его строк
@@ -85,6 +129,7 @@ namespace KPLN_winApp
                     Application.Exit();
                 }
             }
+
 
 
             // Проверка доступа на сайт и загрузка страницы
