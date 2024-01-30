@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Net;
@@ -32,6 +33,7 @@ namespace KPLN_winApp
 
         }
 
+
         // Контекстное меню в ChromiumWebBrowser
         public class CustomMenuHandler : IContextMenuHandler
         {
@@ -47,15 +49,21 @@ namespace KPLN_winApp
             {
                 if (commandId == (CefMenuCommand)26505)
                 {
-                    Application.Exit();
-                    return true;
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/F /IM KPLN_winApp.exe", 
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        Verb = "runas" 
+                    };
+                    Process.Start(startInfo)?.WaitForExit();
                 }
                 return false;
             }
             public void OnContextMenuDismissed(IWebBrowser browserControl, IBrowser browser, IFrame frame)
             {
             }
-
             public bool RunContextMenu(IWebBrowser browserControl, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model, IRunContextMenuCallback callback)
             {
                 return false;
