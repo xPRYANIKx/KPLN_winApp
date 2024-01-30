@@ -1,13 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using CefSharp;
@@ -21,49 +13,50 @@ namespace KPLN_winApp
         public FormMain()
         {
             InitializeComponent();
+
+
+            // Локализация интерфейса на русский язык
+            CefSettings settings = new CefSettings();
+            settings.Locale = "ru";
+            Cef.Initialize(settings);
         }
 
 
         // Инициализация компонентов Chromium
         public ChromiumWebBrowser chromiumWebBrowser;
-
-
-        // Функция проверки работоспособности сайта (наличие интернета)
-        public static bool CheckWebsiteAvailability(string url)
-        {
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    string response = client.DownloadString(url);
-                    if (response.Contains("<span jsselect=\"heading\" jsvalues=\".innerHTML:msg\" jstcache=\"9\">Не удается получить доступ к сайту</span>") || 
-                        response.Contains("Вшитая в код строчка")) {
-                        return false;
-                    }
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+        private void chromiumWebBrowser_LoadingStateChanged(object sender, LoadingStateChangedEventArgs e) {
         }
-
+       
 
         private void FormMain_Load(object sender, EventArgs e)
         {
             // Получение имени пользователя, авторизованного в системе
             string currentWinUser = Environment.UserName;
 
-            // Проверка наличия "user.ini" (в случае отсутствия - создать)
-            string internalUserFileUrl = "user.ini";
+
+            // Проверка наличия "currentuser.ini" (в случае отсутствия - создать)
+            string internalUserFileUrl = "currentuser.ini";
             if (!File.Exists(internalUserFileUrl))
             {
                 string fileUserContentAdd = $"{currentWinUser},0";
                 File.WriteAllText(internalUserFileUrl, fileUserContentAdd);
             }
 
-            // Загрузка содержимого файла "user.ini" и проверка его строк
+
+            // Получение данных из общего файла "userlist.ini"
+            string mainUserFileUrl = "Z:\\Методист\\userlist.ini";
+            try
+            {
+                File.ReadAllLines(mainUserFileUrl);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                Environment.Exit(1);
+            }
+            string[] usersFileContent = File.ReadAllLines(mainUserFileUrl);
+
+
+            // Загрузка содержимого файла "currentuser.ini" и проверка его строк
             string userFileContent = File.ReadAllText(internalUserFileUrl);
             string[] userFileParts = userFileContent.Split(',');
             if (userFileParts.Length == 2)
@@ -71,11 +64,8 @@ namespace KPLN_winApp
                 string userFileUsername = userFileParts[0].Trim();
                 string userFileAuthorized = userFileParts[1].Trim();
 
-                // Получение данных из общего файла "users.ini"
-                string mainUserFileUrl = "Z:\\Методист\\users.ini"; 
-                string[] usersFileContent = File.ReadAllLines(mainUserFileUrl);
 
-                // Обновление файла "user.ini"
+                // Обновление файла "currentuser.ini" из файла "userlist.ini"
                 for (int i = 0; i < usersFileContent.Length; i++)
                 {
                     string[] usersFileParts = usersFileContent[i].Split(',');
@@ -88,16 +78,35 @@ namespace KPLN_winApp
                     }
                 }
 
-                // Проверка выполнения условия и выключение
+
+                // Проверка выполнения условия совпадения строчек в "currentuser.ini" и в "userlist.ini"
                 if (userFileUsername == currentWinUser && userFileAuthorized == "1")
                 {
                     Application.Exit();
                 }
             }
 
+
             // Проверка доступа на сайт и загрузка страницы
+            bool webResponse;
             string url = "https://kpln-employees.ru/";
-            bool webResponse = CheckWebsiteAvailability(url);
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    string response = client.DownloadString(url);
+                    if (response.Contains("<span jsselect=\"heading\" jsvalues=\".innerHTML:msg\" jstcache=\"9\">Не удается получить доступ к сайту</span>") ||
+                        response.Contains("Вшитая в код строчка"))
+                    {
+                        webResponse = false;
+                    }
+                    webResponse = true;
+                }
+            }
+            catch (Exception)
+            {
+                webResponse = false;
+            }
             if (!webResponse)
             {
                 Application.Exit();
@@ -110,11 +119,6 @@ namespace KPLN_winApp
             // Функция обработчик событий: данные заполнены - в HTML добавляется строчка: отлавливаем;
             // В "user.ini" '0' меняется на '1'; обновление данных в "userDB.ini";
             // Application.Exit();
-
-
-            // Отладка
-            Console.WriteLine("Пользователь Windows: " + currentWinUser);
-            Console.WriteLine("Доступ к внешнему ресурсу: " + webResponse);
-        }
+        }  
     }
 }
