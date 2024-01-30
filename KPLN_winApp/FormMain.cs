@@ -57,7 +57,14 @@ namespace KPLN_winApp
                         CreateNoWindow = true,
                         Verb = "runas" 
                     };
-                    Process.Start(startInfo)?.WaitForExit();
+                    try
+                    {
+                        Process.Start(startInfo)?.Close();
+                    }
+                    catch (System.ComponentModel.Win32Exception)
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }
